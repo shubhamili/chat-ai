@@ -10,13 +10,11 @@ const Chat = new Map<string, any[]>();
 export const chatController = async (req: express.Request, res: express.Response) => {
     try {
         const { userSaid, userId } = req.body;
-
         if (!userSaid?.trim() || !userId?.trim()) {
             return res.status(400).json({
                 message: "Message and user ID are required",
             });
         }
-
         const existingChat = Chat.get(userId) || [];
         const contents = [
             ...existingChat,
@@ -25,28 +23,28 @@ export const chatController = async (req: express.Request, res: express.Response
                 parts: [{ text: userSaid }]
             }
         ];
-        // console.log("Existing chat for user:", existingChat);
-        // console.log("chat for user:", Chat);
-
-       
-
-        const response = await gemini.models.generateContent({
+        const streamResult = await gemini.models.generateContentStream({
             model: "gemini-2.5-flash",
             contents: contents,
         });
 
-       
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.setHeader("Transfer-Encoding", "chunked");
+        res.flushHeaders();
+        let fullResponse : string = "";
+        for await (const chunk of streamResult) {
+            const text = chunk.text ?? "";
+            fullResponse += text;
+            res.write(text);
+        }
+        res.end();
         Chat.set(userId, [
             ...contents,
             {
                 role: "model",
-                parts: [{ text: response.text }]
+                parts: [{ text: fullResponse }]
             }
         ]);
-
-        console.log('Chat', Chat)
-        res.status(200).json({ reply: response.text, });
-
     } catch (error) {
         console.error("Error generating content:", error);
         res.status(500).json({ message: "Internal server error" });

@@ -2,27 +2,21 @@ import { useState } from "react";
 import Message from "../component/Message";
 import ChatInput from "../component/ChatInput";
 
-
-
 export interface ChatMessage {
     id: string;
     role: "user" | "assistant";
     content: string;
 }
 
-
 export default function Chat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-
     const sendMessage = async (text: string) => {
         const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
             role: "user",
             content: text,
         };
-
         setMessages((prev) => [...prev, userMessage]);
-
         // Fake AI response
         setTimeout(() => {
             const aiMessage: ChatMessage = {
@@ -30,7 +24,6 @@ export default function Chat() {
                 role: "assistant",
                 content: `Hello! You said "${text}"`,
             };
-
             setMessages((prev) => [...prev, aiMessage]);
         }, 1000);
     };
@@ -44,7 +37,6 @@ export default function Chat() {
                     ))}
                 </div>
             </div>
-
             <ChatInput onSend={sendMessage} />
         </div>
     );
