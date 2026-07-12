@@ -27,11 +27,10 @@ export const chatController = async (req: express.Request, res: express.Response
             model: "gemini-2.5-flash",
             contents: contents,
         });
-
         res.setHeader("Content-Type", "text/plain; charset=utf-8");
         res.setHeader("Transfer-Encoding", "chunked");
         res.flushHeaders();
-        let fullResponse : string = "";
+        let fullResponse: string = "";
         for await (const chunk of streamResult) {
             const text = chunk.text ?? "";
             fullResponse += text;
@@ -45,6 +44,7 @@ export const chatController = async (req: express.Request, res: express.Response
                 parts: [{ text: fullResponse }]
             }
         ]);
+
     } catch (error) {
         console.error("Error generating content:", error);
         res.status(500).json({ message: "Internal server error" });

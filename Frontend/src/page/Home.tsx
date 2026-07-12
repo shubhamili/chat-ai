@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {  useState } from "react";
 import Message from "../component/Message";
 import ChatInput from "../component/ChatInput";
 
@@ -11,22 +11,56 @@ export interface ChatMessage {
 export default function Chat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const sendMessage = async (text: string) => {
-        const userMessage: ChatMessage = {
-            id: crypto.randomUUID(),
-            role: "user",
-            content: text,
-        };
-        setMessages((prev) => [...prev, userMessage]);
-        // Fake AI response
-        setTimeout(() => {
-            const aiMessage: ChatMessage = {
-                id: crypto.randomUUID(),
+        const assistantId = (Date.now() + 1).toString();
+
+        setMessages(prev => [
+            ...prev,
+            {
+                id: Date.now().toString(),
+                role: "user",
+                content: text
+            },
+            {
+                id: assistantId,
                 role: "assistant",
-                content: `Hello! You said "${text}"`,
-            };
-            setMessages((prev) => [...prev, aiMessage]);
-        }, 1000);
+                content: ""
+            }
+        ])
+
+        const response = await fetch("http://localhost:3000/chat/post", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ userSaid: text, userId: "default-user" })
+        });
+        if (!response.ok || !response.body) {
+            console.error("Request failed");
+            return;
+        }
+        console.log("Response status:", response);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let result = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            result += chunk;
+
+            setMessages(prev =>
+                prev.map(msg =>
+                    msg.id === assistantId
+                        ? { ...msg, content: msg.content + chunk }
+                        : msg
+                )
+            );
+        }
+
     };
+
+ 
 
     return (
         <div className="flex flex-col h-screen">

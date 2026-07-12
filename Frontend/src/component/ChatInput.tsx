@@ -7,9 +7,9 @@ interface Props {
 export default function ChatInput({ onSend }: Props) {
     const [text, setText] = useState("");
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!text.trim()) return;
-
+        
         onSend(text);
         setText("");
     };
