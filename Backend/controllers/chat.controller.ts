@@ -4,18 +4,19 @@ import { gemini } from "../services/gemini";
 
 const Chat = new Map<string, any[]>();
 
-
-
-
 export const chatController = async (req: express.Request, res: express.Response) => {
     try {
-        const { userSaid, userId } = req.body;
-        if (!userSaid?.trim() || !userId?.trim()) {
+        const { userSaid } = req.body;
+        const { id, username } = (req as any).user;
+
+        console.log("Authenticated user:", { id, username });
+
+        if (!userSaid?.trim() || !id?.trim()) {
             return res.status(400).json({
                 message: "Message and user ID are required",
             });
         }
-        const existingChat = Chat.get(userId) || [];
+        const existingChat = Chat.get(id) || [];
         const contents = [
             ...existingChat,
             {
@@ -36,8 +37,9 @@ export const chatController = async (req: express.Request, res: express.Response
             fullResponse += text;
             res.write(text);
         }
+        console.log("Full Chat from Chat:", Array.from(Chat.values()));
         res.end();
-        Chat.set(userId, [
+        Chat.set(id, [
             ...contents,
             {
                 role: "model",

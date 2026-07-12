@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Message from "../component/Message";
 import ChatInput from "../component/ChatInput";
-import ReactMarkdown from "react-markdown";
 
 export interface ChatMessage {
     id: string;
@@ -15,7 +14,7 @@ export default function Chat() {
     const sendMessage = async (text: string) => {
         const assistantId = crypto.randomUUID()
         const userId = crypto.randomUUID()
-        console.log("assistantId :", assistantId);
+        // console.log("assistantId :", assistantId);
         setMessages(prev => [
             ...prev,
             {
@@ -31,12 +30,13 @@ export default function Chat() {
         ])
         let response: Response;
         try {
-            response = await fetch("http://localhost:3000/chat/post", {
+            response = await fetch("http://localhost:3000/api/chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ userSaid: text, userId: userId })
+                credentials: "include",
+                body: JSON.stringify({ userSaid: text })
             });
 
             if (!response.ok || !response.body) {
@@ -103,23 +103,7 @@ export default function Chat() {
                     <div ref={bottomRef} />
                 </div>
             </div>
-            {/* <ReactMarkdown
-                components={{
-                    h1: ({ children }) => <h1 className="text-3xl font-bold">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-2xl font-semibold">{children}</h2>,
-                    ul: ({ children }) => <ul className="list-disc ml-6">{children}</ul>,
-                    strong: ({ children }) => <strong className="font-bold">{children}</strong>,
-                }}
-            >
-                {`# Hello
 
-## Subtitle
-
-- One
-- Two
-
-**Bold**`}
-            </ReactMarkdown> */}
             <ChatInput onSend={sendMessage} />
         </div>
     );

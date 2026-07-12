@@ -14,8 +14,8 @@ export default function Message({ message }: Props) {
 
             <div
                 className={` max-w-xl rounded-2xl px-4 py-3 whitespace-pre-wrap ${isUser
-                    ? "bg-green-600 text-white"
-                    : "bg-[#303030] text-gray-100"
+                    // ? "bg-green-600 text-white"
+                    // : "bg-[#303030] text-gray-100"
                     }`}
             >
                 {/* <div className="prose prose-invert max-w-none">
@@ -25,7 +25,7 @@ export default function Message({ message }: Props) {
                 </div> */}
 
 
-                <div className="markdown-body p-5" data-color-mode="dark" >
+                <div className="markdown-body p-5 rounded-2xl" data-color-mode="dark" >
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                 </div>
 
