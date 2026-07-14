@@ -9,7 +9,7 @@ export default function ChatInput({ onSend }: Props) {
 
     const handleSend = async () => {
         if (!text.trim()) return;
-        
+
         onSend(text);
         setText("");
     };

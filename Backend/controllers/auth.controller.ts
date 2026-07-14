@@ -1,12 +1,17 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import userModel from "../models/user.model";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-const createToken = (id: string) => {
-    return jwt.sign({ id }, JWT_SECRET, {
+interface MyJwtPayload extends JwtPayload {
+    id: string;
+    username: string
+}
+
+const createToken = (payload: MyJwtPayload) => {
+    return jwt.sign(payload, JWT_SECRET, {
         expiresIn: "7d",
     });
 };
@@ -34,24 +39,25 @@ export const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await userModel.create({
-            id: crypto.randomUUID(),
             username,
             password: hashedPassword,
         });
 
-        const token = createToken(user.id);
+        console.log('user created ==============>', user)
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
+        // const token = createToken({ id: user._id.toString(), username: user.username });
+
+        // res.cookie("token", token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === "production",
+        //     sameSite: "strict",
+        //     maxAge: 7 * 24 * 60 * 60 * 1000,
+        // });
 
         res.status(201).json({
             message: "User registered successfully",
             user: {
-                id: user.id,
+                id: user._id,
                 username: user.username,
             },
         });
@@ -89,7 +95,9 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const token = createToken(user.id);
+        console.log('user logged in ==============>', user)
+
+        const token = createToken({ id: user._id.toString(), username: user.username });
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -100,6 +108,44 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({
             message: "Login successful",
+            user: {
+                id: user._id,
+                username: user.username,
+            },
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Internal server error",
+        });
+    }
+};
+
+export const logout = (req: Request, res: Response) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+    });
+    res.json({
+        message: "Logout successful",
+    });
+};
+
+export const me = async (req: Request, res: Response) => {
+    try {
+        const token = req.cookies.token;
+        // console.log('token', token)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
+
+        // console.log("Decoded token:", decoded);
+        const user = await userModel.findById(decoded.id.toString());
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        res.json({
             user: {
                 id: user.id,
                 username: user.username,
