@@ -2,17 +2,36 @@ import { Plus, MessageSquare, User } from "lucide-react";
 import { logout } from "../api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+
+type Conversation = {
+    _id: string;
+    userId: string;
+    title: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+};
+
 
 export default function Sidebar() {
-    const chats = [
-        "React Authentication",
-        "Tailwind CSS Guide",
-        "Node.js API",
-        "MongoDB Setup",
-        "Portfolio Ideas",
-        "AI Chatbot",
-    ];
+    const [chatsList, setChatList] = useState<Conversation[]>([])
     const navigate = useNavigate();
+
+    const fetchChats = async () => {
+        const response = await fetch('http://localhost:3000/api/list', {
+            method: 'GET',
+            credentials: 'include',
+        });
+        const data = await response.json();
+        console.log('data', data)
+        setChatList(data.data);
+    }
+
+    useEffect(() => {
+        fetchChats();
+    }, [])
+
 
     const { user } = useAuth();
     console.log('user', user)
@@ -40,13 +59,13 @@ export default function Sidebar() {
                 </p>
 
                 <div className="space-y-1">
-                    {chats.map((chat, index) => (
+                    {chatsList.map((chat, index) => (
                         <button
                             key={index}
                             className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-300 transition hover:bg-zinc-800"
                         >
                             <MessageSquare size={18} />
-                            <span className="truncate">{chat}</span>
+                            <span className="truncate">{chat.title}</span>
                         </button>
                     ))}
                 </div>

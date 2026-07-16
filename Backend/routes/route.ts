@@ -1,5 +1,5 @@
 import express from "express";
-import { chatController } from "../controllers/chat.controller.ts";
+import { chatController, getAllConversations } from "../controllers/chat.controller.ts";
 import { login, logout, me, register } from "../controllers/auth.controller.ts";
 import { auth } from "../middleware/auth.ts";
 
@@ -7,6 +7,7 @@ import { auth } from "../middleware/auth.ts";
 export const Router_ = express.Router();
 
 Router_.post("/chat", auth, chatController);
+Router_.get("/list", auth, getAllConversations);
 
 
 Router_.post("/register", register);
