@@ -33,6 +33,13 @@ export default function Sidebar() {
     }, [])
 
 
+    const handleSidebarItemClick = (conversationId: string) => {
+        navigate(`/chat/${conversationId}`);
+    };
+
+
+
+
     const { user } = useAuth();
     console.log('user', user)
 
@@ -43,10 +50,10 @@ export default function Sidebar() {
                 <h1 className="text-2xl font-bold text-white">
                     🤖 MyGPT
                 </h1>
-
-
-
-                <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition hover:bg-zinc-800">
+                <button
+                    onClick={() => navigate("/")}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-white transition hover:bg-zinc-800"
+                >
                     <Plus size={18} />
                     New Chat
                 </button>
@@ -61,8 +68,9 @@ export default function Sidebar() {
                 <div className="space-y-1">
                     {chatsList.map((chat, index) => (
                         <button
-                            key={index}
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-300 transition hover:bg-zinc-800"
+                            key={chat._id || index}
+                            onClick={() => handleSidebarItemClick(chat._id)}
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-zinc-300 transition hover:bg-zinc-800 cursor-pointer"
                         >
                             <MessageSquare size={18} />
                             <span className="truncate">{chat.title}</span>

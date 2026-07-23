@@ -133,3 +133,29 @@ export const getAllConversations = async (req: express.Request, res: express.Res
     }
 }
 
+export const getConversationMessages = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = (req as any).user;
+        const { conversationId } = req.params;
+
+        const conversation = await Conversation.findOne({ _id: conversationId, userId: id });
+
+        if (!conversation) {
+            return res.status(404).json({ message: "No conversation found" });
+        }
+
+        const messages = await Message.find({ conversationId: conversation._id }).sort({ createdAt: 1 });
+
+        return res.status(200).json({
+            success: true,
+            data: messages.map((message) => ({
+                id: message._id.toString(),
+                role: message.role === "model" ? "assistant" : "user",
+                content: message.content,
+            })),
+        });
+    } catch (error) {
+        console.error("Error generating content:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+}

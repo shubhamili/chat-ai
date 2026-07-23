@@ -11,9 +11,8 @@ export default function AppRoutes() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route element={<AuthLayout />}>
-                    {/* <Sidebar /> */}
                     <Route path="/" element={<Chat />} />
-
+                    <Route path="/chat/:conversationId?" element={<Chat />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/login" replace />} />
